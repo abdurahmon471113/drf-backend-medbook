@@ -42,13 +42,13 @@ INSTALLED_APPS = [
     "rest_framework",
     "accounts",
     "clinics",
-    "django_filters",
     "drf_spectacular",
     "simple_history",
     "phonenumber_field",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "djmoney",
+    "django_filters",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -84,6 +84,7 @@ REST_FRAMEWORK = {
      "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
 SIMPLE_JWT = {

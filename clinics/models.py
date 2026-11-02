@@ -21,8 +21,24 @@ class Specialty(BaseModel):
         
         
 class Clinic(BaseModel):
+    CITY_CHOICES = [
+    ("tashkent", "Tashkent"),
+    ("samarkand", "Samarkand"),
+    ("bukhara", "Bukhara"),
+    ("andijan", "Andijan"),
+    ("namangan", "Namangan"),
+    ("fergana", "Fergana"),
+    ("nukus", "Nukus"),
+    ("qarshi", "Qarshi"),
+    ("termez", "Termez"),
+    ("urgench", "Urgench"),
+    ("jizzakh", "Jizzakh"),
+    ("navoi", "Navoi"),
+]
+    
     name = models.CharField(max_length=50)
     address = models.TextField()
+    city = models.CharField(max_length=30, choices = CITY_CHOICES, default = "tashkent")
 
     def __str__(self):
         return self.name
@@ -31,6 +47,12 @@ class Clinic(BaseModel):
     
     
 class Service(BaseModel):
+    TYPE_OF_SERVICES = [
+        ("any service", "Any Service"),
+        ("consultation", "Consultation"),
+        ("ecg with consultation", "ECG with consultation")
+    ]
+    
     clinic = models.ForeignKey(Clinic, on_delete=models.PROTECT)
     name = models.CharField(max_length=500)
     description = models.TextField(blank=True, default="")
@@ -39,6 +61,7 @@ class Service(BaseModel):
     price = models.DecimalField(max_digits=12, decimal_places=0)
     is_active = models.BooleanField(default=True) 
     doctors = models.ManyToManyField("accounts.DoctorProfile", related_name="doctor_profiles")
+    type = models.CharField(max_length = 50, choices = TYPE_OF_SERVICES, default = "any service") 
     
     
     

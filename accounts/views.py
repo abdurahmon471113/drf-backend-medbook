@@ -2,8 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics, status, views, permissions
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from .serializers import RegisterSerializer, LoginSerializer, LogoutSerializer, PatientProfileSerializator, DoctorProfileSerializator
-from .models import PatientProfile, DoctorProfile
+from .serializers import RegisterSerializer, LoginSerializer, LogoutSerializer
 
 
 
@@ -49,7 +48,4 @@ class LogoutView(generics.GenericAPIView):
         
         
         
-class FindDoctor(generics.ListAPIView):
-    queryset = DoctorProfile.objects.all()
-    serializer_class = DoctorProfileSerializator
-    permission_classes = [AllowAny]
+
