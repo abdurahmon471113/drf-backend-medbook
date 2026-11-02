@@ -47,12 +47,6 @@ class Clinic(BaseModel):
     
     
 class Service(BaseModel):
-    TYPE_OF_SERVICES = [
-        ("any service", "Any Service"),
-        ("consultation", "Consultation"),
-        ("ecg with consultation", "ECG with consultation")
-    ]
-    
     clinic = models.ForeignKey(Clinic, on_delete=models.PROTECT)
     name = models.CharField(max_length=500)
     description = models.TextField(blank=True, default="")
@@ -60,8 +54,7 @@ class Service(BaseModel):
     buffer_minutes = models.PositiveIntegerField(default=10)
     price = models.DecimalField(max_digits=12, decimal_places=0)
     is_active = models.BooleanField(default=True) 
-    doctors = models.ManyToManyField("accounts.DoctorProfile", related_name="doctor_profiles")
-    type = models.CharField(max_length = 50, choices = TYPE_OF_SERVICES, default = "any service") 
+    doctors = models.ManyToManyField("accounts.DoctorProfile")
     
     
     

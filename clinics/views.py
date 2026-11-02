@@ -12,8 +12,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 
 class FindDoctorAPI(generics.ListAPIView):
-    queryset = DoctorProfile.objects.all()
+    queryset = DoctorProfile.objects.filter(is_active=True)
     serializer_class = DoctorProfileSerializator
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = []
+    filterset_fields = ["specialities__name", "clinic__name", "clinic__city", "price", "service__name"]
