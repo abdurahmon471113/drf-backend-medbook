@@ -5,6 +5,13 @@ from django.contrib.auth.base_user import BaseUserManager
 from phonenumber_field.modelfields import PhoneNumberField
 from clinics.models import BaseModel, Specialty, Clinic
 from .choices import AccountChoice
+from rest_framework_simplejwt.tokens import RefreshToken
+
+
+
+
+
+
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -50,10 +57,17 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
     
+    def tokens(self):
+        refresh = RefreshToken.for_user(self)
+        return{
+            'refresh':str(refresh),
+            'access':str(refresh.access_token)
+        }
+    
     
     
 class PatientProfile(BaseModel):
-    patient = models.OneToOneField(User, on_delete=models.CASCADE, related_name="patient_profile")  
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="patient_profile")  
     phone_number = PhoneNumberField(max_length=20, unique=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     
@@ -62,14 +76,19 @@ class PatientProfile(BaseModel):
     
     
 class DoctorProfile(BaseModel):
-    doctor = models.OneToOneField(User, on_delete=models.CASCADE, related_name="doctor_profile")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="doctor_profile")
     clinic = models.ForeignKey(Clinic, on_delete=models.PROTECT)
     specialities = models.ManyToManyField(Specialty, related_name="doctor_profiles")
     bio = models.TextField(blank=True, default="")  
     is_active = models.BooleanField(default=True)  
+    price = models.DecimalField(max_digits=12, decimal_places=0, default=0)
+    currency = models.CharField(max_length=3, default="UZS")
     
     def __str__(self):
         return f"Doctor: {self.user.email}"
+    
+    
+
     
     
 
