@@ -78,11 +78,10 @@ class PatientProfile(BaseModel):
 class DoctorProfile(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="doctor_profile")
     clinic = models.ForeignKey(Clinic, on_delete=models.PROTECT)
-    specialities = models.ManyToManyField(Specialty, related_name="doctor_profiles")
+    specialities = models.ManyToManyField(Specialty, related_name="doctor_profile")
     bio = models.TextField(blank=True, default="")  
     is_active = models.BooleanField(default=True)  
-    price = models.DecimalField(max_digits=12, decimal_places=0, default=0)
-    currency = models.CharField(max_length=3, default="UZS")
+    
     
     def __str__(self):
         return f"Doctor: {self.user.email}"

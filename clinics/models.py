@@ -38,7 +38,7 @@ class Clinic(BaseModel):
     
     name = models.CharField(max_length=50)
     address = models.TextField()
-    city = models.CharField(max_length=30, choices = CITY_CHOICES, default = "tashkent")
+    city = models.CharField(max_length=30, choices=CITY_CHOICES, default = "tashkent")
 
     def __str__(self):
         return self.name
@@ -47,14 +47,20 @@ class Clinic(BaseModel):
     
     
 class Service(BaseModel):
+    SERVICE_TYPE_CHOICES = [
+    ("consultation", "Consultation"),
+    ("diagnostic", "Diagnostic"),
+    ("procedure", "Procedure"),
+]
+    type = models.CharField(max_length=30, choices=SERVICE_TYPE_CHOICES, default="consultation")
     clinic = models.ForeignKey(Clinic, on_delete=models.PROTECT)
-    name = models.CharField(max_length=500)
     description = models.TextField(blank=True, default="")
     duration_minutes = models.PositiveIntegerField(default=30)
     buffer_minutes = models.PositiveIntegerField(default=10)
-    price = models.DecimalField(max_digits=12, decimal_places=0)
+    price = models.DecimalField(max_digits=12, decimal_places=0, default=0)
+    currency = models.CharField(max_length=3, default="UZS")
     is_active = models.BooleanField(default=True) 
-    doctors = models.ManyToManyField("accounts.DoctorProfile")
+    doctors = models.ManyToManyField("accounts.DoctorProfile", related_name="doctor_profile")
     
     
     
@@ -71,7 +77,7 @@ class WeeklyScedule(BaseModel):
 ]
     
     doctor = models.ForeignKey("accounts.DoctorProfile", on_delete=models.CASCADE)
-    weekday = models.CharField(max_length = 20, choices = DAYS_OF_THE_WEEKDAY, default = 'MON')
+    weekday = models.CharField(max_length = 20, choices=DAYS_OF_THE_WEEKDAY, default = 'MON')
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     
@@ -109,7 +115,7 @@ class Appointment(BaseModel):
     service = models.ForeignKey(Service, on_delete=models.PROTECT, related_name="appointments")
     start = models.DateTimeField()
     end = models.DateTimeField()
-    status = models.CharField(max_length=20, default="pending")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     price = models.DecimalField(max_digits=12, decimal_places=0)
     currency = models.CharField(max_length=3, default="UZS")
     patient_note = models.TextField(blank=True, default="")
