@@ -39,6 +39,7 @@ class Clinic(BaseModel):
     name = models.CharField(max_length=50)
     address = models.TextField()
     city = models.CharField(max_length=30, choices=CITY_CHOICES, default = "tashkent")
+    timezone = models.CharField(max_length=50, default="Asia/Tashkent")
 
     def __str__(self):
         return self.name
