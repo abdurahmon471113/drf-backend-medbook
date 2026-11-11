@@ -66,6 +66,7 @@ class User(AbstractUser):
     
     
     
+    
 class PatientProfile(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="patient_profile")  
     phone_number = PhoneNumberField(max_length=20, unique=True, blank=True)

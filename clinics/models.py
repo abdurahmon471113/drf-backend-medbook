@@ -48,12 +48,9 @@ class Clinic(BaseModel):
     
     
 class Service(BaseModel):
-    SERVICE_TYPE_CHOICES = [
-    ("consultation", "Consultation"),
-    ("diagnostic", "Diagnostic"),
-    ("procedure", "Procedure"),
-]
-    type = models.CharField(max_length=30, choices=SERVICE_TYPE_CHOICES, default="consultation")
+    
+    
+    name = models.CharField(max_length=100, null=True)
     clinic = models.ForeignKey(Clinic, on_delete=models.PROTECT)
     description = models.TextField(blank=True, default="")
     duration_minutes = models.PositiveIntegerField(default=30)
@@ -62,6 +59,9 @@ class Service(BaseModel):
     currency = models.CharField(max_length=3, default="UZS")
     is_active = models.BooleanField(default=True) 
     doctors = models.ManyToManyField("accounts.DoctorProfile", related_name="doctor_profile")
+    
+    def __str__(self):
+        return f"{self.name}"
     
     
     
@@ -79,8 +79,14 @@ class WeeklyScedule(BaseModel):
     
     doctor = models.ForeignKey("accounts.DoctorProfile", on_delete=models.CASCADE)
     weekday = models.CharField(max_length = 20, choices=DAYS_OF_THE_WEEKDAY, default = 'MON')
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    
+    
+    
+    def __str__(self):
+        return f"{self.doctor}"
+    
     
     
     
