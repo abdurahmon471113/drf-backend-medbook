@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('clinics', '0014_alter_clinic_timezone'),
+        ("clinics", "0014_alter_clinic_timezone"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='clinic',
-            name='timezone',
-            field=models.CharField(default='Asia/Tashkent', max_length=50),
+            model_name="clinic",
+            name="timezone",
+            field=models.CharField(default="Asia/Tashkent", max_length=50),
         ),
     ]

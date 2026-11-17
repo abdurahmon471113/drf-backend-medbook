@@ -1,55 +1,48 @@
 from django.db import models
 
 
-
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
         abstract = True
-        
-        
+
+
 class Specialty(BaseModel):
     name = models.CharField(max_length=255)
-        
+
     def __str__(self):
-        return self.name    
-    
-    
-    
-        
-        
+        return self.name
+
+
 class Clinic(BaseModel):
     CITY_CHOICES = [
-    ("tashkent", "Tashkent"),
-    ("samarkand", "Samarkand"),
-    ("bukhara", "Bukhara"),
-    ("andijan", "Andijan"),
-    ("namangan", "Namangan"),
-    ("fergana", "Fergana"),
-    ("nukus", "Nukus"),
-    ("qarshi", "Qarshi"),
-    ("termez", "Termez"),
-    ("urgench", "Urgench"),
-    ("jizzakh", "Jizzakh"),
-    ("navoi", "Navoi"),
-]
-    
+        ("tashkent", "Tashkent"),
+        ("samarkand", "Samarkand"),
+        ("bukhara", "Bukhara"),
+        ("andijan", "Andijan"),
+        ("namangan", "Namangan"),
+        ("fergana", "Fergana"),
+        ("nukus", "Nukus"),
+        ("qarshi", "Qarshi"),
+        ("termez", "Termez"),
+        ("urgench", "Urgench"),
+        ("jizzakh", "Jizzakh"),
+        ("navoi", "Navoi"),
+    ]
+
     name = models.CharField(max_length=50)
     address = models.TextField()
-    city = models.CharField(max_length=30, choices=CITY_CHOICES, default = "tashkent")
+    city = models.CharField(max_length=30, choices=CITY_CHOICES, default="tashkent")
     timezone = models.CharField(max_length=50, default="Asia/Tashkent")
 
     def __str__(self):
         return self.name
-    
-    
-    
-    
+
+
 class Service(BaseModel):
-    
-    
+
     name = models.CharField(max_length=100, null=True)
     clinic = models.ForeignKey(Clinic, on_delete=models.PROTECT)
     description = models.TextField(blank=True, default="")
@@ -57,53 +50,55 @@ class Service(BaseModel):
     buffer_minutes = models.PositiveIntegerField(default=10)
     price = models.DecimalField(max_digits=12, decimal_places=0, default=0)
     currency = models.CharField(max_length=3, default="UZS")
-    is_active = models.BooleanField(default=True) 
-    doctors = models.ManyToManyField("accounts.DoctorProfile", related_name="doctor_profile")
-    
+    is_active = models.BooleanField(default=True)
+    doctors = models.ManyToManyField(
+        "accounts.DoctorProfile", related_name="doctor_profile"
+    )
+
     def __str__(self):
         return f"{self.name}"
-    
-    
-    
-    
+
+
 class WeeklyScedule(BaseModel):
     DAYS_OF_THE_WEEKDAY = [
-    ("MON", "Monday"),
-    ("TUE", "Tuesday"),
-    ("WED", "Wednesday"),
-    ("THU", "Thursday"),
-    ("FRI", "Friday"),
-    ("SAT", "Saturday"),
-    ("SUN", "Sunday"),
-]
-    
+        ("MON", "Monday"),
+        ("TUE", "Tuesday"),
+        ("WED", "Wednesday"),
+        ("THU", "Thursday"),
+        ("FRI", "Friday"),
+        ("SAT", "Saturday"),
+        ("SUN", "Sunday"),
+    ]
+
     doctor = models.ForeignKey("accounts.DoctorProfile", on_delete=models.CASCADE)
-    weekday = models.CharField(max_length = 20, choices=DAYS_OF_THE_WEEKDAY, default = 'MON')
+    weekday = models.CharField(
+        max_length=20, choices=DAYS_OF_THE_WEEKDAY, default="MON"
+    )
+    service = models.ForeignKey(
+        Service, on_delete=models.CASCADE, null=True, blank=True
+    )
     start_time = models.TimeField()
     end_time = models.TimeField()
-    
-    
-    
+
     def __str__(self):
         return f"{self.doctor}"
-    
-    
-    
-    
-    
+
+
 class SceduleException(BaseModel):
     TYPE_CHOICES = [
         ("unavailable", "Unavailable"),
         ("extra_hours", "Extra hours"),
     ]
-     
 
-    doctor = models.ForeignKey("accounts.DoctorProfile", on_delete=models.PROTECT, related_name="scedule_exception")
+    doctor = models.ForeignKey(
+        "accounts.DoctorProfile",
+        on_delete=models.PROTECT,
+        related_name="scedule_exception",
+    )
     start = models.TimeField()
     end = models.TimeField()
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     reason = models.TextField(blank=True, default="")
-
 
 
 class Appointment(BaseModel):
@@ -115,11 +110,19 @@ class Appointment(BaseModel):
         ("no_show", "No show"),
         ("expired", "Expired"),
     ]
-    
-    patient = models.ForeignKey("accounts.PatientProfile", on_delete=models.PROTECT, related_name="appointments")
-    doctor = models.ForeignKey("accounts.DoctorProfile", on_delete=models.PROTECT, related_name="appointments")
-    clinic = models.ForeignKey(Clinic, on_delete=models.PROTECT, related_name="appointments")
-    service = models.ForeignKey(Service, on_delete=models.PROTECT, related_name="appointments")
+
+    patient = models.ForeignKey(
+        "accounts.PatientProfile", on_delete=models.PROTECT, related_name="appointments"
+    )
+    doctor = models.ForeignKey(
+        "accounts.DoctorProfile", on_delete=models.PROTECT, related_name="appointments"
+    )
+    clinic = models.ForeignKey(
+        Clinic, on_delete=models.PROTECT, related_name="appointments"
+    )
+    service = models.ForeignKey(
+        Service, on_delete=models.PROTECT, related_name="appointments"
+    )
     start = models.DateTimeField()
     end = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
@@ -128,40 +131,30 @@ class Appointment(BaseModel):
     patient_note = models.TextField(blank=True, default="")
     cancel_reason = models.TextField(blank=True, default="")
     reschedule_count = models.PositiveSmallIntegerField(default=0)
-    
-    
-    
- 
+
+
 class NotificationLog(BaseModel):
     TYPE_CHOICES = [
-    ("appointment_reminder", "Appointment reminder"),
-    ("appointment_confirmed", "Appointment confirmed"),
-    ("appointment_cancelled", "Appointment cancelled"),
-    ("appointment_rescheduled", "Appointment rescheduled"),
-]
+        ("appointment_reminder", "Appointment reminder"),
+        ("appointment_confirmed", "Appointment confirmed"),
+        ("appointment_cancelled", "Appointment cancelled"),
+        ("appointment_rescheduled", "Appointment rescheduled"),
+    ]
     CHANNEL_CHOICES = [
-    ("email", "Email"),
-    ("sms", "SMS"),
-    ("push", "Push notification"),
-] 
+        ("email", "Email"),
+        ("sms", "SMS"),
+        ("push", "Push notification"),
+    ]
     STATUS_CHOICES = [
-    ("pending", "Pending"),
-    ("sent", "Sent"),
-    ("failed", "Failed"),
-]
-    
-    appointment = models.ForeignKey(Appointment, on_delete=models.PROTECT, related_name="notification_logs")
+        ("pending", "Pending"),
+        ("sent", "Sent"),
+        ("failed", "Failed"),
+    ]
+
+    appointment = models.ForeignKey(
+        Appointment, on_delete=models.PROTECT, related_name="notification_logs"
+    )
     type = models.CharField(max_length=50, choices=TYPE_CHOICES)
     channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     sent_at = models.DateTimeField(blank=True, null=True)
-    
-    
-    
-
-    
-
-
-    
-
-     

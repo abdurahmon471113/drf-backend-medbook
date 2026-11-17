@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('clinics', '0008_remove_service_name_service_type_and_more'),
+        ("clinics", "0008_remove_service_name_service_type_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='clinic',
-            name='timezone',
-            field=models.CharField(default='Asia/Tashkent', max_length=50),
+            model_name="clinic",
+            name="timezone",
+            field=models.CharField(default="Asia/Tashkent", max_length=50),
         ),
     ]

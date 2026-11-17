@@ -6,18 +6,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0002_alter_user_managers'),
+        ("accounts", "0002_alter_user_managers"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='doctorprofile',
-            old_name='doctor',
-            new_name='user',
+            model_name="doctorprofile",
+            old_name="doctor",
+            new_name="user",
         ),
         migrations.RenameField(
-            model_name='patientprofile',
-            old_name='patient',
-            new_name='user',
+            model_name="patientprofile",
+            old_name="patient",
+            new_name="user",
         ),
     ]

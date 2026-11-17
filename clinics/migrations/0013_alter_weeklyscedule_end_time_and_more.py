@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('clinics', '0012_remove_service_type_service_name'),
+        ("clinics", "0012_remove_service_type_service_name"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='weeklyscedule',
-            name='end_time',
+            model_name="weeklyscedule",
+            name="end_time",
             field=models.TimeField(),
         ),
         migrations.AlterField(
-            model_name='weeklyscedule',
-            name='start_time',
+            model_name="weeklyscedule",
+            name="start_time",
             field=models.TimeField(),
         ),
     ]

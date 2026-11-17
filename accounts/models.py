@@ -1,16 +1,12 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
-
+from django.contrib.auth.models import AbstractUser
+from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
-from clinics.models import BaseModel, Specialty, Clinic
-from .choices import AccountChoice
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from clinics.models import BaseModel, Clinic, Specialty
 
-
-
-
+from .choices import AccountChoice
 
 
 class UserManager(BaseUserManager):
@@ -30,7 +26,6 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_active", True)
         extra_fields.setdefault("role", "admin")
 
-
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True")
 
@@ -39,63 +34,47 @@ class UserManager(BaseUserManager):
 
         return self.create_user(email, password, **extra_fields)
 
-            
-
 
 class User(AbstractUser):
     username = None
-    
-    email = models.EmailField("Email address", max_length=250, null=True, blank=True, unique=True)
+
+    email = models.EmailField(
+        "Email address", max_length=250, null=True, blank=True, unique=True
+    )
     role = models.CharField(choices=AccountChoice, default=AccountChoice.PATIENT)
-    
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
-    
+
     objects = UserManager()
 
-    
     def __str__(self):
         return self.email
-    
+
     def tokens(self):
         refresh = RefreshToken.for_user(self)
-        return{
-            'refresh':str(refresh),
-            'access':str(refresh.access_token)
-        }
-    
-    
-    
-    
+        return {"refresh": str(refresh), "access": str(refresh.access_token)}
+
+
 class PatientProfile(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="patient_profile")  
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="patient_profile"
+    )
     phone_number = PhoneNumberField(max_length=20, unique=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
-    
+
     def __str__(self):
         return f"Patient: {self.user.email}"
-    
-    
+
+
 class DoctorProfile(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="doctor_profile")
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="doctor_profile"
+    )
     clinic = models.ForeignKey(Clinic, on_delete=models.PROTECT)
     specialities = models.ManyToManyField(Specialty, related_name="doctor_profile")
-    bio = models.TextField(blank=True, default="")  
-    is_active = models.BooleanField(default=True)  
-    
-    
+    bio = models.TextField(blank=True, default="")
+    is_active = models.BooleanField(default=True)
+
     def __str__(self):
         return f"Doctor: {self.user.email}"
-    
-    
-
-    
-    
-
-    
-    
-
-    
-    
-    
-    

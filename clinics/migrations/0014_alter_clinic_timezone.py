@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('clinics', '0013_alter_weeklyscedule_end_time_and_more'),
+        ("clinics", "0013_alter_weeklyscedule_end_time_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='clinic',
-            name='timezone',
-            field=models.CharField(default='Asia/Tashkent, UTC+05:00', max_length=50),
+            model_name="clinic",
+            name="timezone",
+            field=models.CharField(default="Asia/Tashkent, UTC+05:00", max_length=50),
         ),
     ]

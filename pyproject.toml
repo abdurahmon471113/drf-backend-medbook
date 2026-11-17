@@ -16,3 +16,20 @@ dependencies = [
     "drf-spectacular>=0.30.0",
     "psycopg[binary]>=3.3.6",
 ]
+
+[dependency-groups]
+dev = [
+    "black>=26.10.1",
+    "isort>=9.0.2",
+    "pre-commit>=4.7.0",
+]
+
+
+
+[tool.black]
+line-length = 88
+target-version = ["py313"]
+
+[tool.isort]
+profile = "black"
+line_length = 88

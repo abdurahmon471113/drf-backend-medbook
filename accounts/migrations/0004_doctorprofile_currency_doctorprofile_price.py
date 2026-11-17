@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0003_rename_doctor_doctorprofile_user_and_more'),
+        ("accounts", "0003_rename_doctor_doctorprofile_user_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='doctorprofile',
-            name='currency',
-            field=models.CharField(default='UZS', max_length=3),
+            model_name="doctorprofile",
+            name="currency",
+            field=models.CharField(default="UZS", max_length=3),
         ),
         migrations.AddField(
-            model_name='doctorprofile',
-            name='price',
+            model_name="doctorprofile",
+            name="price",
             field=models.DecimalField(decimal_places=0, default=0, max_digits=12),
         ),
     ]

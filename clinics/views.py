@@ -1,21 +1,22 @@
-from rest_framework.views import APIView
-from rest_framework import generics, status, views, permissions
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from rest_framework.response import Response
-from accounts.models import PatientProfile, DoctorProfile
-from clinics.models import Service, WeeklyScedule, Clinic
-from .serializers import PatientProfileSerializator, DoctorProfileSerializator, ServiceSerializer, AvailableDateSerializer
-from django.db.models import Q, Count
-from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import ValidationError
 from datetime import date, timedelta
 
+from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404
+from rest_framework import generics
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from accounts.models import DoctorProfile, PatientProfile
+from clinics.models import Clinic, Service, WeeklyScedule
 
-
-
-
-
+from .serializers import (
+    AvailableDateSerializer,
+    DoctorProfileSerializator,
+    PatientProfileSerializator,
+    ServiceSerializer,
+)
 
 
 # This view is for patients for finding only active doctors by filters page
@@ -24,33 +25,32 @@ class FindDoctorAPI(generics.ListAPIView):
     serializer_class = DoctorProfileSerializator
     permission_classes = [AllowAny]
 
-    
-
-
     def get_queryset(self):
         queryset = super().get_queryset()
-        
+
         # search by first name filter
         if search := self.request.GET.get("search"):
             for i in search.split():
-                queryset = queryset.filter(Q(user__first_name__icontains=i) | Q(user__last_name__icontains=i))
+                queryset = queryset.filter(
+                    Q(user__first_name__icontains=i) | Q(user__last_name__icontains=i)
+                )
 
         # city filter
         if city := self.request.GET.get("city"):
             queryset = queryset.filter(clinic__city__iexact=city)
-            
-        # specialy filter 
+
+        # specialy filter
         if specialty := self.request.GET.get("specialty"):
             queryset = queryset.filter(specialities__name__iexact=specialty)
-        
+
         # minimum price filter
         if price_min := self.request.GET.get("price_min"):
             queryset = queryset.filter(doctor_profile__price__gte=price_min)
-            
-        # maximum price filter    
+
+        # maximum price filter
         if price_max := self.request.GET.get("price_max"):
             queryset = queryset.filter(doctor_profile__price__lte=price_max)
-            
+
         # ordering prices filter
         if ordering := self.request.GET.get("ordering"):
             if ordering == "price":
@@ -72,23 +72,28 @@ class DoctorServiceDetailAPI(APIView):
         serializer = ServiceSerializer(services, many=True)
         return Response(serializer.data)
 
-        
-        
-
 
 class AvailableSlotsAPI(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, pk):
-        print("AVAILABLE SLOTS VIEW STARTED", flush=True)
 
-        doctor = get_object_or_404(
-            DoctorProfile,
-            pk=pk,
-            is_active=True
-        )
-        
-        print(doctor.user.first_name[1:])
+        doctor = get_object_or_404(DoctorProfile, pk=pk, is_active=True)
+
+        service_id = request.query_params.get("service")
+
+        if not service_id:
+            raise ValidationError("Service is required.")
+
+        service = get_object_or_404(Service, pk=service_id, is_active=True)
+
+        if not service.doctors.filter(id=doctor.id).exists():
+            raise ValidationError("This doctor does not provide this service.")
+
+        if service.clinic != doctor.clinic:
+            raise ValidationError(
+                "This service does not belong to the doctor's clinic."
+            )
 
         # 1. Get dates from query parameters
         date_from = request.query_params.get("date_from")
@@ -111,27 +116,22 @@ class AvailableSlotsAPI(APIView):
         max_date = date_from + timedelta(days=14)
 
         if date_to > max_date:
-            raise ValidationError(
-                "You can select a maximum of 14 days."
-            )
+            raise ValidationError("You can select a maximum of 14 days.")
 
         results = []
 
         # 4. Check every selected date
-        current_date = date_from
 
-        while current_date <= date_to:
+        total_days = (date_to - date_from).days + 1
+
+        for i in range(total_days):
+
+            current_date = date_from + timedelta(days=i)
 
             weekday = current_date.strftime("%a").upper()
 
-            print(
-                f"DATE: {current_date} | WEEKDAY: {weekday}",
-                flush=True
-            )
-
             weekly_schedule = WeeklyScedule.objects.filter(
-                weekday=weekday,
-                doctor=doctor
+                weekday=weekday, doctor=doctor, service=service
             )
 
             # 5. Check doctor's working schedule
@@ -140,30 +140,33 @@ class AvailableSlotsAPI(APIView):
             else:
                 status = "Day off"
 
-            results.append({
-                "date": current_date,
-                "weekday": weekday,
-                "count": weekly_schedule.count(),
-                "status": status,
-                "slots": weekly_schedule,
-                "clinic_timezone": doctor.clinic.timezone
-            })
+            results.append(
+                {
+                    # "doctor": f"id: {doctor.id}; full_name: Dr {doctor.user.first_name} {doctor.user.last_name}",
+                    "specialty": [
+                        specialty.name for specialty in doctor.specialities.all()
+                    ],
+                    "service": [
+                        service.name
+                        for service in doctor.doctor_profile.filter(pk=service_id)
+                    ],  # service.doctors.name
+                    "date": current_date,
+                    "weekday": weekday,
+                    "count": weekly_schedule.count(),
+                    "status": status,
+                    "slots": weekly_schedule,
+                    "clinic_city": doctor.clinic.city,
+                    "clinic_timezone": doctor.clinic.timezone,
+                }
+            )
 
-            current_date += timedelta(days=1)
+            print(
+                f"DATE: {current_date}--{weekday} | Dr {doctor.user.first_name} {doctor.user.last_name} today works and has {weekly_schedule.count()} slots.",
+                flush=True,
+            )
 
-        # 6. Serialize results
         serializer = AvailableDateSerializer(
-            results,
-            many=True,
-            context={"doctor": doctor}
+            results, many=True, context={"doctor": doctor}
         )
 
-        return Response({
-            "results": serializer.data
-        })
-
-    
-    
-    
- 
-
+        return Response({"results": serializer.data})
